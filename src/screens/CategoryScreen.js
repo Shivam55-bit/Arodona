@@ -35,24 +35,22 @@ const FILTER_DATA = {
     { label: 'Above ₹50,000', value: '50000+' }
   ],
   type: [
-    { label: 'Women Accessory', value: 'women_accessory' },
-    { label: 'Mangalsutra', value: 'mangalsutra' }
+    { label: 'Women', value: 'women' },
+    { label: 'Men', value: 'men' },
+    { label: 'Girls', value: 'girls' },
+    { label: 'Boys', value: 'boys' }
   ],
   metal: [
-    { label: 'Gold', value: 'gold' },
-    { label: 'Rose Gold', value: 'rose_gold' },
-    { label: 'Plain Gold/Platinum', value: 'plain_gold_platinum' },
-    { label: 'White Gold', value: 'white_gold' }
+    { label: '18k gold plated', value: 'artificial' },
+    { label: 'Gold jewellery', value: 'gold' },
+    { label: 'Silver jewellery', value: 'silver' },
+    { label: 'Platinum', value: 'platinum' },
+    { label: 'Diamond jewellery', value: 'diamond' }
   ],
   gender: [
     { label: 'Unisex', value: 'unisex' },
     { label: 'Women', value: 'women' },
     { label: 'Men', value: 'men' }
-  ],
-  goldPurity: [
-    { label: '18k', value: '18k' },
-    { label: '22k', value: '22k' },
-    { label: '24k', value: '24k' }
   ],
   stones: [
     { label: 'Diamond', value: 'diamond' },
@@ -67,7 +65,8 @@ const FILTER_DATA = {
     { label: 'Wedding', value: 'wedding' },
     { label: 'Workwear', value: 'workwear' },
     { label: 'Birthday', value: 'birthday' },
-    { label: 'Festival', value: 'festival' }
+    { label: 'Festival', value: 'festival' },
+    { label: 'Regular Wear', value: 'regular_wear' }
   ],
   design: [
     { label: 'Classic', value: 'classic' },
@@ -95,7 +94,6 @@ export default function CategoryScreen({ navigation, route }) {
     type: null,
     metal: null,
     gender: null,
-    goldPurity: null,
     stones: null,
     occasion: null,
     design: null
@@ -115,6 +113,7 @@ export default function CategoryScreen({ navigation, route }) {
         'Rings': 'Ring',
         'Earrings': 'Earring',
         'Bracelet': 'Bracelet',
+        'Bangles': 'Bangle',
         'Pendant': 'Pendant',
       };
 
@@ -206,7 +205,6 @@ export default function CategoryScreen({ navigation, route }) {
       type: null,
       metal: null,
       gender: null,
-      goldPurity: null,
       stones: null,
       occasion: null,
       design: null

@@ -116,8 +116,10 @@ function HomeScreen({ navigation }) {
           'Earrings': require('../../assets/earring.png'),
           'Rings': require('../../assets/ring.png'),
           'Bracelets': require('../../assets/bracelet.png'),
+          'Bangles': require('../../assets/bracelet.png'),
           'Pendants': require('../../assets/pendant.png'),
           'Necklaces': require('../../assets/pendant.png'),
+          'Mangalsutra': require('../../assets/pendant.png'),
         };
         
         const mappedCategories = categoriesResult.categories.map((cat, index) => ({
@@ -126,6 +128,29 @@ function HomeScreen({ navigation }) {
           type: cat.slug,
           image: categoryImages[cat.name] || require('../../assets/ring.png'),
         }));
+        
+        // Add Mangalsutra as a custom category if not present
+        const hasMangalsutra = mappedCategories.some(cat => cat.label === 'Mangalsutra');
+        if (!hasMangalsutra) {
+          mappedCategories.push({
+            id: 'mangalsutra',
+            label: 'Mangalsutra',
+            type: 'mangalsutra',
+            image: require('../../assets/pendant.png'),
+          });
+        }
+        
+        // Add Bangles as a custom category if not present
+        const hasBangles = mappedCategories.some(cat => cat.label === 'Bangles');
+        if (!hasBangles) {
+          mappedCategories.push({
+            id: 'bangles',
+            label: 'Bangles',
+            type: 'bangles',
+            image: require('../../assets/bracelet.png'),
+          });
+        }
+        
         setCategories(mappedCategories);
       }
 

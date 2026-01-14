@@ -115,16 +115,23 @@ export const apiRequest = async (endpoint, method = 'GET', body = null, requires
     }
 
     if (!response.ok) {
-      throw {
+      const errorMessage = data.message || data.detail || 'Something went wrong';
+      const errorObj = {
         status: response.status,
-        message: data.message || data.detail || 'Something went wrong',
+        message: errorMessage,
         data
       };
+      
+      // Don't log to console in production, just throw
+      throw errorObj;
     }
 
     return data;
   } catch (error) {
-    console.error('API Request Error:', error);
+    // Only log network errors, not API errors
+    if (!error.status) {
+      console.error('Network Error:', error.message || error);
+    }
     throw error;
   }
 };

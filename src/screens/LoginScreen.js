@@ -45,7 +45,9 @@ const LoginScreen = ({ navigation }) => {
           Alert.alert('Login Failed', result.message || 'Invalid credentials');
         }
       } catch (error) {
-        Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+        // Display user-friendly error message
+        const errorMessage = error.message || 'Invalid email or password. Please try again.';
+        Alert.alert('Login Failed', errorMessage);
       } finally {
         setLoading(false);
       }
