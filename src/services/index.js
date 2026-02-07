@@ -8,3 +8,5 @@ export * from './orderApi';
 export * from './addressApi';
 export * from './paymentApi';
 export * from './wishlistApi';
+export * from './packagingService';
+export * from './billService';

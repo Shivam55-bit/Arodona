@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Base URL for API
-export const BASE_URL = 'https://arodna.gyanpith.com/api';
+export const BASE_URL = 'https://arodona.theashirwad.com/api';
 
 // Token storage keys
 const TOKEN_KEY = 'access_token';

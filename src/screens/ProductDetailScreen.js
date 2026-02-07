@@ -26,12 +26,14 @@ import { scale, verticalScale, moderateScale } from 'react-native-size-matters';
 // import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
-import { getProductById, formatPrice, getMetalTypeDisplay } from '../services/productApi';
+import { getProductById, formatPrice, getMetalTypeDisplay, getPrimaryImage } from '../services/productApi';
+import PackagingSelector from '../components/PackagingSelector';
 
 const { width } = Dimensions.get('window');
 
 export default function ProductDetailScreen({ navigation, route }) {
   const [selectedSize, setSelectedSize] = useState(null);
+  const [selectedPackaging, setSelectedPackaging] = useState('Box');
   const [product, setProduct] = useState(route.params?.product || null);
   const [loading, setLoading] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -265,6 +267,18 @@ export default function ProductDetailScreen({ navigation, route }) {
 
   const productImages = product?.images || [];
   const currentImage = productImages[currentImageIndex];
+  
+  // Helper to get proper image URL
+  const getImageUrl = (img) => {
+    if (!img) return null;
+    if (typeof img === 'string') return img;
+    return img.url || img.image_url || img.src || null;
+  };
+  
+  // Get primary image for display
+  const primaryImageUrl = getPrimaryImage(product) || 
+    getImageUrl(currentImage) || 
+    (product?.image ? product.image : null);
 
   if (loading) {
     return (
@@ -314,17 +328,26 @@ export default function ProductDetailScreen({ navigation, route }) {
           style={styles.imageArea}
         >
           <View style={styles.imageContainer}>
-            <Image
-              source={{ uri: currentImage?.url }}
-              style={styles.mainImage}
-              resizeMode="contain"
-            />
+            {primaryImageUrl ? (
+              <Image
+                source={{ uri: primaryImageUrl }}
+                style={styles.mainImage}
+                resizeMode="contain"
+              />
+            ) : (
+              <View style={[styles.mainImage, styles.noImageContainer]}>
+                <Icon name="image-off" size={60} color="#ccc" />
+                <Text style={styles.noImageText}>No Image Available</Text>
+              </View>
+            )}
             
             {/* Image Badge */}
-            <View style={styles.imageBadge}>
-              <Icon name="image" size={16} color="#C9A86A" />
-              <Text style={styles.imageBadgeText}>{currentImageIndex + 1}/{productImages.length}</Text>
-            </View>
+            {productImages.length > 0 && (
+              <View style={styles.imageBadge}>
+                <Icon name="image" size={16} color="#C9A86A" />
+                <Text style={styles.imageBadgeText}>{currentImageIndex + 1}/{productImages.length}</Text>
+              </View>
+            )}
           </View>
 
           <TouchableOpacity 
@@ -341,17 +364,19 @@ export default function ProductDetailScreen({ navigation, route }) {
         </LinearGradient>
 
         {/* Thumbnails */}
-        <View style={styles.thumbRow}>
-          {productImages.map((img, idx) => (
-            <TouchableOpacity
-              key={idx}
-              style={[styles.thumbBox, idx === currentImageIndex && styles.thumbActive]}
-              onPress={() => setCurrentImageIndex(idx)}
-            >
-              <Image source={{ uri: img.url }} style={styles.thumbImg} />
-            </TouchableOpacity>
-          ))}
-        </View>
+        {productImages.length > 1 && (
+          <View style={styles.thumbRow}>
+            {productImages.map((img, idx) => (
+              <TouchableOpacity
+                key={idx}
+                style={[styles.thumbBox, idx === currentImageIndex && styles.thumbActive]}
+                onPress={() => setCurrentImageIndex(idx)}
+              >
+                <Image source={{ uri: getImageUrl(img) }} style={styles.thumbImg} />
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
 
         {/* ================= PRODUCT INFO ================= */}
         <View style={styles.infoCard}>
@@ -1085,6 +1110,13 @@ export default function ProductDetailScreen({ navigation, route }) {
         </View>
       </Modal>
 
+      {/* ================= PACKAGING SELECTION ================= */}
+      <PackagingSelector
+        selectedPackaging={selectedPackaging}
+        onPackagingSelect={setSelectedPackaging}
+        style={{ marginHorizontal: 0, marginBottom: 0, borderRadius: 0, elevation: 0 }}
+      />
+
       {/* ================= BOTTOM BAR ================= */}
       <LinearGradient
         colors={['#f8f8f8', '#ffffff']}
@@ -1093,11 +1125,18 @@ export default function ProductDetailScreen({ navigation, route }) {
         <View style={styles.bottomBar}>
           <TouchableOpacity
             style={[styles.cartBtn, isInCart(product.id) && styles.removeBtn]}
-            onPress={() =>
-              isInCart(product.id)
-                ? removeFromCart(product.id)
-                : addToCart(product)
-            }
+            onPress={() => {
+              if (isInCart(product.id)) {
+                removeFromCart(product.id);
+              } else {
+                addToCart(product, { packaging: selectedPackaging });
+                Alert.alert(
+                  '✅ Added to Cart',
+                  `${product.name} added with ${selectedPackaging} packaging`,
+                  [{ text: 'OK' }]
+                );
+              }
+            }}
             activeOpacity={0.8}
           >
             <Icon
@@ -1114,7 +1153,27 @@ export default function ProductDetailScreen({ navigation, route }) {
             colors={['#D4B068', '#C9A86A', '#B8975C']}
             style={styles.buyBtn}
           >
-            <TouchableOpacity style={styles.buyBtnInner} activeOpacity={0.8}>
+            <TouchableOpacity 
+              style={styles.buyBtnInner} 
+              activeOpacity={0.8}
+              onPress={() => {
+                // Add to cart with packaging if not already in cart
+                if (!isInCart(product.id)) {
+                  addToCart(product, { packaging: selectedPackaging });
+                }
+                // Navigate to Cart screen for checkout
+                navigation.navigate('Main', { 
+                  screen: 'Cart',
+                  params: { 
+                    buyNow: true,
+                    product: {
+                      ...product,
+                      packaging: selectedPackaging
+                    }
+                  }
+                });
+              }}
+            >
               <Icon name="lightning-bolt" size={22} color="#fff" />
               <Text style={styles.buyBtnText}>Buy Now</Text>
             </TouchableOpacity>
@@ -1199,6 +1258,16 @@ const styles = StyleSheet.create({
     width: width * 0.85, 
     height: verticalScale(320),
     borderRadius: moderateScale(16),
+  },
+  noImageContainer: {
+    backgroundColor: '#f5f5f5',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  noImageText: {
+    marginTop: verticalScale(10),
+    fontSize: moderateScale(14),
+    color: '#999',
   },
   imageBadge: {
     position: 'absolute',

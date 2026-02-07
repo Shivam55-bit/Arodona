@@ -1,6 +1,6 @@
 import { getToken } from './api';
 
-const BASE_URL = 'https://arodna.gyanpith.com/api';
+const BASE_URL = 'https://arodona.theashirwad.com/api';
 
 /**
  * Toggle product in wishlist (add/remove)

@@ -78,9 +78,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.arodona"
+    namespace "com.bhoomitechzone.arodona"
     defaultConfig {
-        applicationId "com.arodona"
+        applicationId "com.bhoomitechzone.arodona"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

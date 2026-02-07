@@ -104,22 +104,24 @@ export const CartProvider = ({ children }) => {
     try {
       // Ensure product has an ID
       const productId = String(product.id || product._id || Date.now());
+      const packaging = options.packaging || product.packaging || 'Box'; // Default packaging
       
       console.log('=== ADD TO CART ===');
       console.log('Product ID:', productId);
       console.log('Product Name:', product.name);
+      console.log('Packaging:', packaging);
       console.log('Current cart length:', cart.length);
       
       // Always use guest mode (local storage) for now
       console.log('Guest mode - adding to local cart');
       
-      const existingItem = cart.find(item => String(item.id) === String(productId));
+      const existingItem = cart.find(item => String(item.id) === String(productId) && item.packaging === packaging);
       
       let newCart;
       if (existingItem) {
-        console.log('Item exists, increasing quantity from', existingItem.quantity, 'to', existingItem.quantity + 1);
+        console.log('Item exists with same packaging, increasing quantity from', existingItem.quantity, 'to', existingItem.quantity + 1);
         newCart = cart.map(item =>
-          String(item.id) === String(productId)
+          String(item.id) === String(productId) && item.packaging === packaging
             ? { ...item, quantity: item.quantity + (options.quantity || 1) }
             : item
         );
@@ -129,6 +131,7 @@ export const CartProvider = ({ children }) => {
           ...product,
           id: productId,
           quantity: options.quantity || 1,
+          packaging: packaging, // Include packaging
           // Ensure all required fields are present
           name: product.name,
           price: product.price,
@@ -137,7 +140,7 @@ export const CartProvider = ({ children }) => {
           description: product.description,
         };
         newCart = [...cart, newItem];
-        console.log('New item added:', newItem.name);
+        console.log('New item added:', newItem.name, 'with packaging:', packaging);
       }
       
       console.log('Setting cart with', newCart.length, 'items');
@@ -165,20 +168,22 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const updateQuantity = async (productId, quantity) => {
+  const updateQuantity = async (productId, quantity, packaging = null) => {
     try {
       console.log('Updating quantity for product:', productId, 'to:', quantity);
       
       // Always use guest mode (local storage)
       if (quantity <= 0) {
         console.log('Quantity <= 0, removing item');
-        return await removeFromCart(productId);
+        return await removeFromCart(productId, packaging);
       }
       
       setCart(prev =>
-        prev.map(item =>
-          String(item.id) === String(productId) ? { ...item, quantity } : item
-        )
+        prev.map(item => {
+          const matchesId = String(item.id) === String(productId);
+          const matchesPackaging = packaging ? item.packaging === packaging : true;
+          return matchesId && matchesPackaging ? { ...item, quantity } : item;
+        })
       );
       console.log('Quantity updated successfully');
       return true;
@@ -212,6 +217,24 @@ export const CartProvider = ({ children }) => {
       return false;
     } catch (error) {
       console.error('Error decreasing quantity:', error);
+      return false;
+    }
+  };
+
+  const updatePackaging = async (productId, newPackaging, oldPackaging = null) => {
+    try {
+      console.log('Updating packaging for product:', productId, 'to:', newPackaging);
+      setCart(prev =>
+        prev.map(item => {
+          const matchesId = String(item.id) === String(productId);
+          const matchesPackaging = oldPackaging ? item.packaging === oldPackaging : true;
+          return matchesId && matchesPackaging ? { ...item, packaging: newPackaging } : item;
+        })
+      );
+      console.log('Packaging updated successfully');
+      return true;
+    } catch (error) {
+      console.error('Error updating packaging:', error);
       return false;
     }
   };
@@ -275,6 +298,7 @@ export const CartProvider = ({ children }) => {
       addToCart, 
       removeFromCart, 
       updateQuantity,
+      updatePackaging,
       increaseQuantity,
       decreaseQuantity,
       clearCart,

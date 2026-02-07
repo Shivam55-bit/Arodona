@@ -1,6 +1,6 @@
 import { getToken } from './api';
 
-const BASE_URL = 'https://arodna.gyanpith.com';
+const BASE_URL = 'https://arodona.theashirwad.com';
 
 /**
  * Get all addresses for the current user
